@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+    monit:
+      image: nginx
+      container_name: monit
+      restart: always
+      ports:
+        - 8082:80
+      volumes:
+        - ./monitor:/var/www/html
+        - ./conf/nginx.conf:/etc/nginx/nginx.conf
+        - ./conf/sites/:/etc/nginx/sites-available
+        - ./conf/conf.d/:/etc/nginx/conf.d
+      links:
+        - php-fpm
+
+    php-fpm:
+      image: php:7-fpm
+      volumes:
+        - ./monitor:/var/www/html
