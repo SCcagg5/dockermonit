@@ -11,13 +11,14 @@ The system works on the output of `docker stats` that is formated by update.sh i
 
 ## Tech
 
-The `update.sh` is launch by `bash update.sh &` to be launched in background, take care to modify the output of `index.html` to have it save in the folder that your server expose for example `/var/www/html/`
+### Server stats
+**Configure your server(s)** The `update.sh` is launch by `bash update.sh &` to be launched in background, take care to modify the output of `index.html` to have it save in the folder that your server expose for example `/var/www/html/`
 
 
 You can now check that your website print a json, save that URL for later
 
-
-**Deploy your client using docker simply go into `Client` and launch using `docker-compose`
+### Client
+**Deploy your client** using docker simply go into `Client` and launch using `docker-compose`
 
 
 ```bash
@@ -26,5 +27,13 @@ docker-compose up -d --build
 
 Your client is launch and is accessible on `http://localhost:80`
 
-You can now add your server in the file `conf.js` just adding into the json the name of your server and the URL of the json
+You can now add your server in the file `monitor/Client/js/conf.js` just adding into the json the name of your server and the URL of the json
+```javascript
+let servers = {
+  "YOUR NAME": "YOUR URL"
+}
+```
 
+### Map your dockers
+
+To allow the client to display infos about your docker you simply have to got they named "yourname_map_whatever" or named nginx (easyer for me, using the image `jwilder/nginx`)
