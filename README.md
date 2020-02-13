@@ -27,7 +27,7 @@ docker-compose up -d --build
 
 Your client is launch and is accessible on `http://localhost:80`
 
-You can now add your server in the file `monitor/Client/js/conf.js` just adding into the json the name of your server and the URL of the json
+You can now add your server in the file `Client/monitor/js/conf.js` just adding into the json the name of your server and the URL of the json
 ```javascript
 let servers = {
   "YOUR NAME": "YOUR URL"
