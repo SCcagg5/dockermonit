@@ -9,6 +9,13 @@ Vue.component('monit', {
   },
 
   components: { vcdonut },
+  
+  filters: {
+    fixed : function(number){
+      number = number.toFixed(2);
+      return number;
+    }
+  },
 
   methods: {
     update: function(){
@@ -78,10 +85,10 @@ Vue.component('monit', {
         </div>
         <div class="card-body row text-center">
           <div class="ml-auto mr-auto col-auto white">
-            Mémoire: {{ data.memory }}%
+            Mémoire: {{ data.memory | fixed }}%
           </div>
           <div class="ml-auto mr-auto col-auto white">
-            CPU: {{ data.CPU }}%
+            CPU: {{ data.CPU | fixed }}%
           </div>
           <div class="ml-auto mr-auto col-auto white">
             Containers: {{ data.containers.length }}
