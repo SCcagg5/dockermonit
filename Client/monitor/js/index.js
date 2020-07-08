@@ -4,12 +4,13 @@ Vue.component('monit', {
   data: function () {
     return {
       serversdata: {},
+      datas: [],
       render: false
     }
   },
 
   components: { vcdonut },
-  
+
   filters: {
     fixed : function(number){
       number = number.toFixed(2);
@@ -29,10 +30,28 @@ Vue.component('monit', {
     error: function(err){
       console.log(err)
     },
+    order: function(){
+      order = [[], [], []];
+      count = 0;
+      zone = 0; 
+      for (var i in this.serversdata) {
+         count += 9;
+         count += this.serversdata[i].containers.length;
+         if (count > 50) {
+           count = 0;
+           zone += 1
+         }
+         if (zone < 3) {
+           order[zone].push(this.serversdata[i]);
+         }
+      }
+      this.datas = order;
+    },
     store: function(data) {
       let servername = data.config.url.split("&name=")[1]
       this.serversdata[servername] = JSON.parse(data.data)
       this.serversdata[servername]["name"] = servername;
+      this.order()
       this.$forceUpdate();
     }
   },
@@ -42,8 +61,9 @@ Vue.component('monit', {
       By SCcagg5
       <h2>DockMonit</h2>
     </div>
-    <div v-for="data in serversdata" class="col-md-6 col-lg-5 col-xl-3 mr-1">
-      <div class="card">
+    <div v-for="columns in datas" class="col-md-6 col-lg-5 col-xl-4">
+
+      <div v-for="data in columns" class="card">
         <div class="card-body row">
           <div class="col-6 ml-1">
             <h5 class="color">{{ data.name }}</h5>
@@ -73,7 +93,7 @@ Vue.component('monit', {
             thickness=45
             background="#27293d"
             foreground="#525f7f"
-            :sections='[{value: data.memory, color: "#ba54f5"}]'
+            :sections='[{value: data.memory > 98 ? 99 : data.memory, color: data.memory > 90 ? "red" : "#ba54f5"}]'
             ></vc-donut>
           </div>
         </div>
@@ -105,14 +125,12 @@ Vue.component('monit', {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="container in data.containers" v-if="container['Name'].split('_')[1] == 'map' || container['Name'] == 'nginx'">
-                <td>{{ container['Name'].split('_').length > 2 ?
-                  container['Name'].split('_')[0].substring(0, 6) + '_' + container['Name'].split('_')[2]+container['Name'].split('_')[3] :
-                  container['Name']}}</td>
-                <td>{{ container['MemUsage'].split(' / ')[0] }}</td>
-                <td>{{ container['NetIO'] }}</td>
-                <td>{{ container['BlockIO'] }}</td>
-                <td>{{ container['PIDs'] }}</td>
+              <tr v-for="container in data.containers">
+                <td>{{ container['Name'] }}                     </td>
+                <td>{{ container['MemUsage'].split(' / ')[0] }} </td>
+                <td>{{ container['NetIO'] }}                    </td>
+                <td>{{ container['BlockIO'] }}                  </td>
+                <td>{{ container['PIDs'] }}                     </td>
               </tr>
             </tbody>
           </table>
