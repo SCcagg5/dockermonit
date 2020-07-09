@@ -19,6 +19,12 @@ Vue.component('monit', {
   },
 
   methods: {
+    sum: function(arr){
+    if (arr.length == 0)
+      return 0;
+    const reducer = (accumulator, currentValue) => accumulator + currentValue;
+    return arr.reduce(reducer);
+    },
     update: function(){
       for (var i in servers) {
         axios.get("./proxy.php?server=" + servers[i] + "&name=" + i)
@@ -30,20 +36,39 @@ Vue.component('monit', {
     error: function(err){
       console.log(err)
     },
-    order: function(){
+    order: function(data){
+      serversdata = []
       order = [[], [], []];
-      count = 0;
-      zone = 0; 
-      for (var i in this.serversdata) {
-         count += 9;
-         count += this.serversdata[i].containers.length;
-         if (count > 50) {
-           count = 0;
-           zone += 1
+      count = [[], [], []]
+      for (var i in data) {
+        serversdata.push(data[i]);
+      }
+      serversdata.sort(function(e1,e2){ return e2.containers.length - e1.containers.length });
+      var i1 = 0;
+      while (i1 < serversdata.length) {
+         i2 = 0;
+         while (i2 < 3) {
+           if (this.sum(count[i2]) + serversdata[i1].containers.length + 15 < 60) {
+             order[i2].push(serversdata[i1]);
+             count[i2].push(serversdata[i1].containers.length + 15);
+             i2 = 5;
+           }
+           i2 += 1;
          }
-         if (zone < 3) {
-           order[zone].push(this.serversdata[i]);
-         }
+         i1 += 1;
+      }
+      i2 = 0;
+      while (i2 < 3 ** 2){
+        p = i2 % (3 - 1);
+        if (this.sum(count[p]) < this.sum(count[p + 1])){
+          temp = count[p];
+          count[p] = count[p + 1];
+          count[p + 1] = temp;
+          temp = order[p];
+          order[p] = order[p + 1];
+          order[p + 1] = temp;
+        }
+        i2 += 1;
       }
       this.datas = order;
     },
@@ -51,7 +76,7 @@ Vue.component('monit', {
       let servername = data.config.url.split("&name=")[1]
       this.serversdata[servername] = JSON.parse(data.data)
       this.serversdata[servername]["name"] = servername;
-      this.order()
+      this.order(this.serversdata);
       this.$forceUpdate();
     }
   },
@@ -62,7 +87,6 @@ Vue.component('monit', {
       <h2>DockMonit</h2>
     </div>
     <div v-for="columns in datas" class="col-md-6 col-lg-5 col-xl-4">
-
       <div v-for="data in columns" class="card">
         <div class="card-body row">
           <div class="col-6 ml-1">
@@ -127,10 +151,10 @@ Vue.component('monit', {
             <tbody>
               <tr v-for="container in data.containers">
                 <td>{{ container['Name'] }}                     </td>
-                <td>{{ container['MemUsage'].split(' / ')[0] }} </td>
-                <td>{{ container['NetIO'] }}                    </td>
-                <td>{{ container['BlockIO'] }}                  </td>
-                <td>{{ container['PIDs'] }}                     </td>
+                <td>{{ container['PIDs'] != 0 ? container['MemUsage'].split(' / ')[0] : '' }} </td>
+                <td>{{ container['PIDs'] != 0 ? container['NetIO'] : ''   }}                    </td>
+                <td>{{ container['PIDs'] != 0 ? container['BlockIO'] : '' }}                  </td>
+                <td>{{ container['PIDs'] != 0 ? container['PIDs'] : 'OFFLINE'}}                     </td>
               </tr>
             </tbody>
           </table>
